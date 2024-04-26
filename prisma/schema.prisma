@@ -12,3 +12,20 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id    Int    @id(map: "pkUser") @default(autoincrement())
+  uuid  String @unique(map: "akUserUuid") @default(uuid())
+  phone String @unique(map: "akUserPhone")
+  otp   Otp?
+}
+
+model Otp {
+  id        Int      @id(map: "pkOtp") @default(autoincrement())
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  userId    Int      @unique()
+  user      User     @relation(fields: [userId], references: [id])
+}
