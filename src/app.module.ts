@@ -2,8 +2,8 @@ import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule, loggingMiddleware } from 'nestjs-prisma';
 import { RandomModule } from './random/random.module';
-import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { OtpModule } from './otp/otp.module';
 
 @Module({
   imports: [
@@ -23,8 +23,8 @@ import { UserModule } from './user/user.module';
     }),
 
     RandomModule,
-    AuthModule,
     UserModule,
+    OtpModule,
   ],
   controllers: [],
   providers: [],

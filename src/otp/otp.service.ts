@@ -1,31 +1,27 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { PrismaService } from 'nestjs-prisma';
 import { RandomService } from 'src/random/random.service';
+import { UserService } from 'src/user/user.service';
+import { IUserEntity } from 'src/user/user.interfaces';
 
 @Injectable()
-export class AuthService {
+export class OtpService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly randomService: RandomService,
+    private readonly userService: UserService,
   ) {}
 
   async sendOtpCode(sendOtpDto: SendOtpDto) {
     const { phone } = sendOtpDto;
-    let user = await this.prisma.user.findUnique({ where: { phone } });
-    if (!user) user = await this.prisma.user.create({ data: { phone } });
-    const otp = await this.createUserOtpCode(user.id);
+    const user = await this.userService.findOrCreateByPhone(phone, sendOtpDto);
+    const otp = await this.createUserOtpCode(user);
     console.log(otp);
     return { message: 'OTP code has been successfully sent' };
   }
 
-  private async createUserOtpCode(userId: number) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new NotFoundException('User not found');
+  private async createUserOtpCode(user: IUserEntity) {
     const expiresAt = new Date(Date.now() + 1000 * 60 * 2); // 2 minutes
     const code = await this.randomService.generateOtpCode();
     const otp = await this.prisma.otp.findUnique({
