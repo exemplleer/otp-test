@@ -1,11 +1,17 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res } from '@nestjs/common';
+import { Cookies } from 'src/decorators/cookie.decorator';
 import { OtpService } from './otp.service';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { CheckOtpDto } from './dto/check-otp.dto';
+import { AuthService } from './auth.service';
+import { Response } from 'express';
 
 @Controller('/auth')
 export class AuthController {
-  constructor(private readonly otpService: OtpService) {}
+  constructor(
+    private readonly otpService: OtpService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Post('/otp/send')
   sendOtpCode(@Body() sendOtpDto: SendOtpDto) {
@@ -13,7 +19,26 @@ export class AuthController {
   }
 
   @Post('/otp/check')
-  checkOtpCode(@Body() checkOtpDto: CheckOtpDto) {
-    return this.otpService.checkOtpCode(checkOtpDto);
+  checkOtpCode(
+    @Body() checkOtpDto: CheckOtpDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.otpService.checkOtpCode(checkOtpDto, res);
+  }
+
+  @Get('/refresh')
+  refresh(
+    @Cookies('refreshToken') refreshToken: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.updateRefreshSession(refreshToken, res);
+  }
+
+  @Get('/logout')
+  logout(
+    @Cookies('refreshToken') refreshToken: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.logout(refreshToken, res);
   }
 }

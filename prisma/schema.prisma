@@ -14,14 +14,19 @@ datasource db {
 }
 
 model User {
-  id    Int    @id(map: "pkUser") @default(autoincrement())
-  uuid  String @unique(map: "akUserUuid") @default(uuid())
-  phone String @unique(map: "akUserPhone")
-  otp   Otp?
+  id       Int              @id(map: "pkUser") @default(autoincrement())
+  uuid     String           @unique(map: "akUserUuid") @default(uuid())
+  phone    String           @unique(map: "akUserPhone")
+  otp      Otp?
+  sessions RefreshSession[]
 }
 
+// TODO : add fingerprint field
 model RefreshSession {
-  id Int @id(map: "pkRefreshSession") @default(autoincrement())
+  id           Int    @id(map: "pkRefreshSession") @default(autoincrement())
+  userId       Int?
+  refreshToken String
+  user         User?  @relation(fields: [userId], references: [id])
 }
 
 model Otp {

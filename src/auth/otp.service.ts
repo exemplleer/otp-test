@@ -12,6 +12,8 @@ import { UserService } from 'src/user/user.service';
 import { IUserEntity } from 'src/user/user.interface';
 import { AuthService } from './auth.service';
 import { IUserPayload } from './auth.interface';
+import { SessionService } from './session.service';
+import { Response } from 'express';
 
 @Injectable()
 export class OtpService {
@@ -20,17 +22,18 @@ export class OtpService {
     private readonly randomService: RandomService,
     private readonly userService: UserService,
     private readonly authService: AuthService,
+    private readonly sessionService: SessionService,
   ) {}
 
   async sendOtpCode(sendOtpDto: SendOtpDto) {
     const { phone } = sendOtpDto;
     const user = await this.userService.findOrCreateByPhone(phone, sendOtpDto);
     const otp = await this.createUserOtpCode(user);
-    console.log(otp);
+    console.log(otp); // TODO : use SMS service here
     return { message: 'OTP code has been successfully sent' };
   }
 
-  async checkOtpCode(checkOtpDto: CheckOtpDto) {
+  async checkOtpCode(checkOtpDto: CheckOtpDto, res: Response) {
     const { phone, code } = checkOtpDto;
     const now = new Date();
     const user = await this.userService.findOneByPhone(phone);
@@ -48,7 +51,10 @@ export class OtpService {
 
     const payload: IUserPayload = { uuid: user.uuid, phone: user.phone };
     const tokenData = await this.authService.generateTokenData(payload);
-    return tokenData;
+    const { accessToken, refreshToken } = tokenData;
+    await this.sessionService.createRefreshSession(user.id, refreshToken);
+    this.authService.setRefreshTokenCookie(res, refreshToken);
+    return { accessToken };
   }
 
   private async createUserOtpCode(user: IUserEntity) {
