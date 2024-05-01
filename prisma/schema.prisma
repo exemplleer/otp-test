@@ -20,6 +20,10 @@ model User {
   otp   Otp?
 }
 
+model RefreshSession {
+  id Int @id(map: "pkRefreshSession") @default(autoincrement())
+}
+
 model Otp {
   id        Int      @id(map: "pkOtp") @default(autoincrement())
   code      String

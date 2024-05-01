@@ -10,6 +10,8 @@ import { PrismaService } from 'nestjs-prisma';
 import { RandomService } from 'src/random/random.service';
 import { UserService } from 'src/user/user.service';
 import { IUserEntity } from 'src/user/user.interface';
+import { AuthService } from './auth.service';
+import { IUserPayload } from './auth.interface';
 
 @Injectable()
 export class OtpService {
@@ -17,6 +19,7 @@ export class OtpService {
     private readonly prisma: PrismaService,
     private readonly randomService: RandomService,
     private readonly userService: UserService,
+    private readonly authService: AuthService,
   ) {}
 
   async sendOtpCode(sendOtpDto: SendOtpDto) {
@@ -32,6 +35,7 @@ export class OtpService {
     const now = new Date();
     const user = await this.userService.findOneByPhone(phone);
     const otp = user?.otp;
+
     if (!user || !otp) {
       throw new NotFoundException('User not found');
     }
@@ -41,15 +45,15 @@ export class OtpService {
     if (otp.expiresAt < now) {
       throw new UnauthorizedException('OTP code is expired');
     }
-    return { message: 'tokens' };
+
+    const payload: IUserPayload = { uuid: user.uuid, phone: user.phone };
+    const tokenData = await this.authService.generateTokenData(payload);
+    return tokenData;
   }
 
   private async createUserOtpCode(user: IUserEntity) {
     const expiresAt = new Date(Date.now() + 1000 * 60 * 2); // 2 minutes
     const code = await this.randomService.generateOtpCode();
-    // const otp = await this.prisma.otp.findUnique({
-    //   where: { userId: user.id },
-    // });
     const otp = user?.otp;
     if (!otp) {
       return await this.prisma.otp.create({
