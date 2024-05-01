@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { OtpService } from './otp.service';
-import { OtpController } from './otp.controller';
+import { AuthController } from './auth.controller';
 import { RandomModule } from 'src/random/random.module';
 import { UserModule } from 'src/user/user.module';
 import { AuthService } from './auth.service';
@@ -10,7 +10,7 @@ import { RefreshStrategy } from './strategy/refresh.strategy';
 
 @Module({
   imports: [RandomModule, UserModule, JwtModule],
-  controllers: [OtpController],
-  providers: [OtpService, AuthService, AccessStrategy, RefreshStrategy],
+  controllers: [AuthController],
+  providers: [AuthService, OtpService, AccessStrategy, RefreshStrategy],
 })
-export class OtpModule {}
+export class AuthModule {}
