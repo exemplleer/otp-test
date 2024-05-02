@@ -6,7 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { SessionService } from './session.service';
 import { IUserPayload } from './auth.interface';
-import { UserService } from 'src/user/user.service';
+import { UserService } from 'src/modules/user/user.service';
 import { Response } from 'express';
 
 @Injectable()

@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Res } from '@nestjs/common';
-import { Cookies } from 'src/decorators/cookie.decorator';
+import { Cookies } from 'src/shared/decorators/cookie.decorator';
 import { OtpService } from './otp.service';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { CheckOtpDto } from './dto/check-otp.dto';
