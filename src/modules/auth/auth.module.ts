@@ -8,14 +8,19 @@ import { JwtModule } from '@nestjs/jwt';
 import { AccessStrategy } from './strategy/access.strategy';
 import { RefreshStrategy } from './strategy/refresh.strategy';
 import { SessionService } from './session.service';
+import { HashModule } from 'src/shared/hash/hash.module';
+import { TokenService } from './token.service';
+import { CookieService } from './cookie.service';
 
 @Module({
-  imports: [RandomModule, UserModule, JwtModule],
+  imports: [RandomModule, UserModule, HashModule, JwtModule],
   controllers: [AuthController],
   providers: [
     AuthService,
     OtpService,
     SessionService,
+    TokenService,
+    CookieService,
     AccessStrategy,
     RefreshStrategy,
   ],

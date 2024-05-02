@@ -4,6 +4,7 @@ import { PrismaModule, loggingMiddleware } from 'nestjs-prisma';
 import { RandomModule } from './shared/random/random.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { HashModule } from './shared/hash/hash.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AuthModule } from './modules/auth/auth.module';
     RandomModule,
     UserModule,
     AuthModule,
+    HashModule,
   ],
   controllers: [],
   providers: [],

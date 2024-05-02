@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { Cookies } from 'src/shared/decorators/cookie.decorator';
 import { OtpService } from './otp.service';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { CheckOtpDto } from './dto/check-otp.dto';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
+import { AccessGuard } from './guard/access.guard';
+import { RefreshGuard } from './guard/refresh.guard';
 
 @Controller('/auth')
 export class AuthController {
@@ -26,6 +28,7 @@ export class AuthController {
     return this.otpService.checkOtpCode(checkOtpDto, res);
   }
 
+  @UseGuards(RefreshGuard)
   @Get('/refresh')
   refresh(
     @Cookies('refreshToken') refreshToken: string,
@@ -34,6 +37,7 @@ export class AuthController {
     return this.authService.updateRefreshSession(refreshToken, res);
   }
 
+  @UseGuards(AccessGuard)
   @Get('/logout')
   logout(
     @Cookies('refreshToken') refreshToken: string,

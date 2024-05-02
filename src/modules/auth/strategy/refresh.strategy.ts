@@ -7,14 +7,16 @@ import { Request } from 'express';
 export class RefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req: Request) => {
+          return req.cookies.refreshToken;
+        },
+      ]),
       secretOrKey: 'zxy987',
-      passReqToCallback: true,
     });
   }
 
-  validate(req: Request, payload: any) {
-    console.log(req);
+  validate(payload: any) {
     return payload;
   }
 }
