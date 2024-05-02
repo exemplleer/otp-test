@@ -3,13 +3,11 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { SessionService } from './session.service';
-import { IUserPayload } from './auth.interface';
+import { ITokenData, IUserPayload } from './auth.interface';
 import { UserService } from 'src/modules/user/user.service';
-import { Response } from 'express';
+import { IUserEntity } from 'src/modules/user/user.interface';
+import { SessionService } from './session.service';
 import { TokenService } from './token.service';
-import { IUserEntity } from '../user/user.interface';
-import { CookieService } from './cookie.service';
 
 @Injectable()
 export class AuthService {
@@ -17,10 +15,9 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly sessionService: SessionService,
     private readonly tokenService: TokenService,
-    private readonly cookieService: CookieService,
   ) {}
 
-  async updateRefreshSession(currentRefreshToken: string, res: Response) {
+  async refresh(currentRefreshToken: string): Promise<ITokenData> {
     if (!currentRefreshToken) {
       throw new UnauthorizedException('Not authorized. Please, login');
     }
@@ -43,19 +40,16 @@ export class AuthService {
     const user = await this.userService.findOneByPhone(oldPayload.phone);
     const newPayload = this.generateUserPayload(user);
     const tokenData = await this.tokenService.generateTokenData(newPayload);
-    const { accessToken, refreshToken } = tokenData;
+    const { refreshToken } = tokenData;
     await this.sessionService.createRefreshSession(user.id, refreshToken);
-    this.cookieService.setCookieRefreshToken(res, refreshToken);
-    return { accessToken };
+    return tokenData;
   }
 
-  async logout(refreshToken: string, res: Response) {
+  async logout(refreshToken: string): Promise<void> {
     if (!refreshToken) {
       throw new UnauthorizedException('Not authorized. Please, login');
     }
     await this.sessionService.removeRefreshSession(refreshToken);
-    this.cookieService.clearCookieRefreshToken(res);
-    return { message: 'User has successfully logged out' };
   }
 
   generateUserPayload(user: IUserEntity): Readonly<IUserPayload> {

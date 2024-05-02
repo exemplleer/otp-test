@@ -3,10 +3,9 @@ import { randomInt } from 'crypto';
 
 @Injectable()
 export class RandomService {
-  // this function generates a 6-digit code for the OTP service
-  async generateSixDigitCode(): Promise<string> {
-    const codeArray = Array.from({ length: 6 }, () => randomInt(9));
-    const code = codeArray.join('');
-    return code;
+  // this function generates code for the OTP service
+  async generateDigitString(length: number): Promise<string> {
+    const digits = Array.from({ length }, () => randomInt(9));
+    return digits.join('');
   }
 }

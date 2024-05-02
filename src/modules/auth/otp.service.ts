@@ -4,17 +4,16 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { PrismaService } from 'nestjs-prisma';
+import { UserService } from 'src/modules/user/user.service';
+import { IUserEntity, IOtpEntity } from 'src/modules/user/user.interface';
+import { RandomService } from 'src/shared/random/random.service';
+import { AuthService } from './auth.service';
+import { ITokenData } from './auth.interface';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { CheckOtpDto } from './dto/check-otp.dto';
-import { PrismaService } from 'nestjs-prisma';
-import { RandomService } from 'src/shared/random/random.service';
-import { UserService } from 'src/modules/user/user.service';
-import { IUserEntity } from 'src/modules/user/user.interface';
-import { SessionService } from './session.service';
-import { Response } from 'express';
 import { TokenService } from './token.service';
-import { AuthService } from './auth.service';
-import { CookieService } from './cookie.service';
+import { SessionService } from './session.service';
 
 @Injectable()
 export class OtpService {
@@ -23,20 +22,18 @@ export class OtpService {
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly sessionService: SessionService,
-    private readonly cookieService: CookieService,
     private readonly randomService: RandomService,
     private readonly tokenService: TokenService,
   ) {}
 
-  async sendOtpCode(sendOtpDto: SendOtpDto) {
+  async sendOtpCode(sendOtpDto: SendOtpDto): Promise<void> {
     const { phone } = sendOtpDto;
     const user = await this.userService.findOrCreateByPhone(phone, sendOtpDto);
-    const otp = await this.createUserOtpCode(user);
+    const otp = await this.createOrUpdateUserOtpCode(user);
     console.log(otp); // TODO : use SMS service here
-    return { message: 'OTP code has been successfully sent' };
   }
 
-  async checkOtpCode(checkOtpDto: CheckOtpDto, res: Response) {
+  async checkOtpCode(checkOtpDto: CheckOtpDto): Promise<ITokenData> {
     const { phone, code } = checkOtpDto;
     const now = new Date();
     const user = await this.userService.findOneByPhone(phone);
@@ -54,15 +51,16 @@ export class OtpService {
 
     const payload = this.authService.generateUserPayload(user);
     const tokenData = await this.tokenService.generateTokenData(payload);
-    const { accessToken, refreshToken } = tokenData;
+    const { refreshToken } = tokenData;
     await this.sessionService.createRefreshSession(user.id, refreshToken);
-    this.cookieService.setCookieRefreshToken(res, refreshToken);
-    return { accessToken };
+    return tokenData;
   }
 
-  private async createUserOtpCode(user: IUserEntity) {
+  private async createOrUpdateUserOtpCode(
+    user: IUserEntity,
+  ): Promise<IOtpEntity> {
     const expiresAt = new Date(Date.now() + 1000 * 60 * 2); // 2 minutes
-    const code = await this.randomService.generateSixDigitCode();
+    const code = await this.generateOtpCode();
     const otp = user?.otp;
     if (!otp) {
       return await this.prisma.otp.create({
@@ -77,5 +75,10 @@ export class OtpService {
         data: { code, expiresAt },
       });
     }
+  }
+
+  private async generateOtpCode(): Promise<string> {
+    const length = 6;
+    return await this.randomService.generateDigitString(length);
   }
 }
