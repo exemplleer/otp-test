@@ -12,8 +12,6 @@ import { AuthService } from './auth.service';
 import { ITokenData } from './auth.interface';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { CheckOtpDto } from './dto/check-otp.dto';
-import { TokenService } from './token.service';
-import { SessionService } from './session.service';
 
 @Injectable()
 export class OtpService {
@@ -21,9 +19,7 @@ export class OtpService {
     private readonly prisma: PrismaService,
     private readonly userService: UserService,
     private readonly authService: AuthService,
-    private readonly sessionService: SessionService,
     private readonly randomService: RandomService,
-    private readonly tokenService: TokenService,
   ) {}
 
   async sendOtpCode(sendOtpDto: SendOtpDto): Promise<void> {
@@ -52,14 +48,7 @@ export class OtpService {
       throw new UnauthorizedException('OTP code is expired');
     }
 
-    const payload = this.authService.generateUserPayload(user);
-    const tokenData = await this.tokenService.generateTokenData(payload);
-    const { refreshToken } = tokenData;
-    await this.sessionService.createRefreshSession(
-      user.id,
-      refreshToken,
-      fingerprint,
-    );
+    const tokenData = await this.authService.createSession(user, fingerprint);
     return tokenData;
   }
 

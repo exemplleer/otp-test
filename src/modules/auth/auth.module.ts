@@ -1,16 +1,15 @@
 import { Module } from '@nestjs/common';
-import { OtpService } from './otp.service';
-import { AuthController } from './auth.controller';
-import { RandomModule } from 'src/shared/random/random.module';
-import { UserModule } from 'src/modules/user/user.module';
-import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
-import { AccessStrategy } from './strategy/access.strategy';
-import { RefreshStrategy } from './strategy/refresh.strategy';
-import { SessionService } from './session.service';
+import { RandomModule } from 'src/shared/random/random.module';
 import { HashModule } from 'src/shared/hash/hash.module';
+import { UserModule } from 'src/modules/user/user.module';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { OtpService } from './otp.service';
 import { TokenService } from './token.service';
 import { CookieService } from './cookie.service';
+import { AccessStrategy } from './strategies/access.strategy';
+import { RefreshStrategy } from './strategies/refresh.strategy';
 
 @Module({
   imports: [RandomModule, UserModule, HashModule, JwtModule],
@@ -18,7 +17,6 @@ import { CookieService } from './cookie.service';
   providers: [
     AuthService,
     OtpService,
-    SessionService,
     TokenService,
     CookieService,
     AccessStrategy,

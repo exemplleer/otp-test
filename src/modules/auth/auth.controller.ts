@@ -1,13 +1,13 @@
 import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { Cookie } from 'src/shared/decorators/cookie.decorator';
+import { Fingerprint } from 'src/shared/decorators/fingerprint.decorator';
 import { AuthService } from './auth.service';
 import { OtpService } from './otp.service';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { CheckOtpDto } from './dto/check-otp.dto';
 import { CookieService } from './cookie.service';
-import { RefreshGuard } from './guard/refresh.guard';
+import { RefreshGuard } from './guards/refresh.guard';
 import { Response } from 'express';
-import { Fingerprint } from 'src/shared/decorators/fingerprint.decorator';
 
 @Controller('/auth')
 export class AuthController {
@@ -29,11 +29,8 @@ export class AuthController {
     @Fingerprint() fingerprint: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const tokenData = await this.otpService.checkOtpCode(
-      checkOtpDto,
-      fingerprint,
-    );
-    const { accessToken, refreshToken } = tokenData;
+    const td = await this.otpService.checkOtpCode(checkOtpDto, fingerprint);
+    const { accessToken, refreshToken } = td;
     this.cookieService.setRefreshToken(res, refreshToken);
     return { accessToken };
   }
@@ -45,8 +42,8 @@ export class AuthController {
     @Fingerprint() fingerprint: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const tokenData = await this.authService.refresh(refreshToken, fingerprint);
-    const { accessToken, refreshToken: newRefreshToken } = tokenData;
+    const td = await this.authService.updateSession(refreshToken, fingerprint);
+    const { accessToken, refreshToken: newRefreshToken } = td;
     this.cookieService.setRefreshToken(res, newRefreshToken);
     return { accessToken };
   }
@@ -58,7 +55,7 @@ export class AuthController {
     @Fingerprint() fingerprint: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    await this.authService.logout(refreshToken, fingerprint);
+    await this.authService.clearSession(refreshToken, fingerprint);
     this.cookieService.clearRefreshToken(res);
     return { message: 'User has successfully logged out' };
   }
