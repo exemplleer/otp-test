@@ -18,24 +18,24 @@ export class TokenService {
   }
 
   async generateAccessToken(payload: any) {
-    const secret = 'abc123';
-    const expiresIn = 60 * 15; // 15 minutes
+    const secret = process.env.ACCESS_TOKEN_SECRET;
+    const expiresIn = process.env.ACCESS_TOKEN_EXPIRATION;
     return await this.jwtService.signAsync(payload, { secret, expiresIn });
   }
 
   async generateRefreshToken(payload: any) {
-    const secret = 'zxy987';
-    const expiresIn = 60 * 60 * 24 * 7; // 7 days
+    const secret = process.env.REFRESH_TOKEN_SECRET;
+    const expiresIn = process.env.REFRESH_TOKEN_EXPIRATION;
     return await this.jwtService.signAsync(payload, { secret, expiresIn });
   }
 
   async verifyAccessToken(accessToken: string) {
-    const secret = 'abc123';
+    const secret = process.env.ACCESS_TOKEN_SECRET;
     return await this.jwtService.verifyAsync(accessToken, { secret });
   }
 
   async verifyRefreshToken(refreshToken: string) {
-    const secret = 'zxy987';
+    const secret = process.env.REFRESH_TOKEN_SECRET;
     return await this.jwtService.verifyAsync(refreshToken, { secret });
   }
 }

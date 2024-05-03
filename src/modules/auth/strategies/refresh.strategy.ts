@@ -12,7 +12,7 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
           return req.cookies.refreshToken;
         },
       ]),
-      secretOrKey: 'zxy987',
+      secretOrKey: process.env.REFRESH_TOKEN_SECRET,
     });
   }
 

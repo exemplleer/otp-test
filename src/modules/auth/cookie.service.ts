@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Response } from 'express';
+import { toMs } from 'ms-typescript';
 
 @Injectable()
 export class CookieService {
@@ -9,7 +10,8 @@ export class CookieService {
   // @Res({ passthrough: true }) res: Response,
 
   setRefreshToken(res: Response, refreshToken: string) {
-    res.cookie('refreshToken', refreshToken);
+    const maxAge = toMs(process.env.REFRESH_TOKEN_EXPIRATION);
+    res.cookie('refreshToken', refreshToken, { maxAge });
   }
 
   clearRefreshToken(res: Response) {
