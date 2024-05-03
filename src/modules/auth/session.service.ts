@@ -5,21 +5,25 @@ import { PrismaService } from 'nestjs-prisma';
 export class SessionService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createRefreshSession(userId: number, refreshToken: string) {
+  async createRefreshSession(
+    userId: number,
+    refreshToken: string,
+    fingerprint: string,
+  ) {
     return await this.prisma.refreshSession.create({
-      data: { userId, refreshToken },
+      data: { userId, refreshToken, fingerprint },
     });
   }
 
-  async findRefreshSession(refreshToken: string) {
-    return await this.prisma.refreshSession.findFirst({
-      where: { refreshToken },
+  async findRefreshSession(refreshToken: string, fingerprint: string) {
+    return await this.prisma.refreshSession.findUnique({
+      where: { fingerprint_refreshToken: { fingerprint, refreshToken } },
     });
   }
 
-  async removeRefreshSession(refreshToken: string) {
-    return await this.prisma.refreshSession.deleteMany({
-      where: { refreshToken },
+  async removeRefreshSession(refreshToken: string, fingerprint: string) {
+    return await this.prisma.refreshSession.delete({
+      where: { fingerprint_refreshToken: { fingerprint, refreshToken } },
     });
   }
 }

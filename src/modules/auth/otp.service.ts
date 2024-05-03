@@ -33,7 +33,10 @@ export class OtpService {
     console.log(otp); // TODO : use SMS service here
   }
 
-  async checkOtpCode(checkOtpDto: CheckOtpDto): Promise<ITokenData> {
+  async checkOtpCode(
+    checkOtpDto: CheckOtpDto,
+    fingerprint: string,
+  ): Promise<ITokenData> {
     const { phone, code } = checkOtpDto;
     const now = new Date();
     const user = await this.userService.findOneByPhone(phone);
@@ -52,7 +55,11 @@ export class OtpService {
     const payload = this.authService.generateUserPayload(user);
     const tokenData = await this.tokenService.generateTokenData(payload);
     const { refreshToken } = tokenData;
-    await this.sessionService.createRefreshSession(user.id, refreshToken);
+    await this.sessionService.createRefreshSession(
+      user.id,
+      refreshToken,
+      fingerprint,
+    );
     return tokenData;
   }
 

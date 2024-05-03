@@ -21,12 +21,14 @@ model User {
   sessions RefreshSession[]
 }
 
-// TODO : add fingerprint field
 model RefreshSession {
   id           Int    @id(map: "pkRefreshSession") @default(autoincrement())
   userId       Int?
   refreshToken String
+  fingerprint  String
   user         User?  @relation(fields: [userId], references: [id])
+
+  @@unique([fingerprint, refreshToken])
 }
 
 model Otp {

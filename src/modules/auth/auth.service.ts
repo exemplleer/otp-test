@@ -17,21 +17,31 @@ export class AuthService {
     private readonly tokenService: TokenService,
   ) {}
 
-  async refresh(currentRefreshToken: string): Promise<ITokenData> {
+  async refresh(
+    currentRefreshToken: string,
+    fingerprint: string,
+  ): Promise<ITokenData> {
     if (!currentRefreshToken) {
       throw new UnauthorizedException('Not authorized. Please, login');
     }
 
-    const session =
-      await this.sessionService.findRefreshSession(currentRefreshToken);
+    const session = await this.sessionService.findRefreshSession(
+      currentRefreshToken,
+      fingerprint,
+    );
 
     if (!session) {
       throw new UnauthorizedException('Not authorized. Please, login');
     }
 
-    // TODO : add fingerprint compare logic here
+    if (session.fingerprint !== fingerprint) {
+      throw new ForbiddenException('Access denied');
+    }
 
-    await this.sessionService.removeRefreshSession(currentRefreshToken);
+    await this.sessionService.removeRefreshSession(
+      currentRefreshToken,
+      fingerprint,
+    );
     const oldPayload = await this.tokenService
       .verifyRefreshToken(currentRefreshToken)
       .catch(() => {
@@ -41,15 +51,19 @@ export class AuthService {
     const newPayload = this.generateUserPayload(user);
     const tokenData = await this.tokenService.generateTokenData(newPayload);
     const { refreshToken } = tokenData;
-    await this.sessionService.createRefreshSession(user.id, refreshToken);
+    await this.sessionService.createRefreshSession(
+      user.id,
+      refreshToken,
+      fingerprint,
+    );
     return tokenData;
   }
 
-  async logout(refreshToken: string): Promise<void> {
+  async logout(refreshToken: string, fingerprint: string): Promise<void> {
     if (!refreshToken) {
       throw new UnauthorizedException('Not authorized. Please, login');
     }
-    await this.sessionService.removeRefreshSession(refreshToken);
+    await this.sessionService.removeRefreshSession(refreshToken, fingerprint);
   }
 
   generateUserPayload(user: IUserEntity): Readonly<IUserPayload> {
