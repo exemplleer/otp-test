@@ -1,12 +1,13 @@
 import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { Cookie } from 'src/shared/decorators/cookie.decorator';
 import { Fingerprint } from 'src/shared/decorators/fingerprint.decorator';
+import { AccessGuard } from 'src/shared/guards/access.guard';
+import { RefreshGuard } from 'src/shared/guards/refresh.guard';
 import { AuthService } from './auth.service';
 import { OtpService } from './otp.service';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { CheckOtpDto } from './dto/check-otp.dto';
 import { CookieService } from './cookie.service';
-import { RefreshGuard } from './guards/refresh.guard';
 import { Response } from 'express';
 
 @Controller('/auth')
@@ -48,7 +49,7 @@ export class AuthController {
     return { accessToken };
   }
 
-  @UseGuards(RefreshGuard)
+  @UseGuards(AccessGuard, RefreshGuard)
   @Get('/logout')
   async logout(
     @Cookie('refreshToken') refreshToken: string,

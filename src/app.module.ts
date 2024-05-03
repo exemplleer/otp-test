@@ -1,10 +1,9 @@
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule, loggingMiddleware } from 'nestjs-prisma';
-import { RandomModule } from './shared/random/random.module';
+import { RandomModule } from './shared/services/random/random.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { HashModule } from './shared/hash/hash.module';
 
 @Module({
   imports: [
@@ -26,7 +25,6 @@ import { HashModule } from './shared/hash/hash.module';
     RandomModule,
     UserModule,
     AuthModule,
-    HashModule,
   ],
   controllers: [],
   providers: [],

@@ -7,7 +7,7 @@ import {
 import { PrismaService } from 'nestjs-prisma';
 import { UserService } from 'src/modules/user/user.service';
 import { IUserEntity, IOtpEntity } from 'src/modules/user/user.interface';
-import { RandomService } from 'src/shared/random/random.service';
+import { RandomService } from 'src/shared/services/random/random.service';
 import { AuthService } from './auth.service';
 import { ITokenData } from './auth.interface';
 import { SendOtpDto } from './dto/send-otp.dto';
