@@ -1,5 +1,6 @@
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { HttpModule } from '@nestjs/axios';
 import { PrismaModule, loggingMiddleware } from 'nestjs-prisma';
 import { RandomModule } from './shared/services/random/random.module';
 import { UserModule } from './modules/user/user.module';
@@ -21,6 +22,7 @@ import { AuthModule } from './modules/auth/auth.module';
         ],
       },
     }),
+    HttpModule,
 
     RandomModule,
     UserModule,

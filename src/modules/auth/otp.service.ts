@@ -8,6 +8,7 @@ import { PrismaService } from 'nestjs-prisma';
 import { UserService } from 'src/modules/user/user.service';
 import { IUserEntity, IOtpEntity } from 'src/modules/user/user.interface';
 import { RandomService } from 'src/shared/services/random/random.service';
+import { SmsService } from './sms.service';
 import { AuthService } from './auth.service';
 import { ITokenData } from './auth.interface';
 import { SendOtpDto } from './dto/send-otp.dto';
@@ -19,6 +20,7 @@ export class OtpService {
     private readonly prisma: PrismaService,
     private readonly userService: UserService,
     private readonly authService: AuthService,
+    private readonly smsService: SmsService,
     private readonly randomService: RandomService,
   ) {}
 
@@ -26,7 +28,8 @@ export class OtpService {
     const { phone } = sendOtpDto;
     const user = await this.userService.findOrCreateByPhone(phone, sendOtpDto);
     const otp = await this.createOrUpdateUserOtpCode(user);
-    console.log(otp); // TODO : use SMS service here
+    await this.smsService.sendSmsWithCodeViaExolve(phone, otp.code);
+    console.log(otp);
   }
 
   async checkOtpCode(
