@@ -3,7 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ITokenData, IUserPayload } from './auth.interface';
+import { IRefreshSession, ITokenData, IUserPayload } from './auth.interface';
 import { UserService } from 'src/modules/user/user.service';
 import { IUserEntity } from 'src/modules/user/user.interface';
 import { PrismaService } from 'nestjs-prisma';
@@ -25,15 +25,14 @@ export class AuthService {
       throw new UnauthorizedException('Not authorized. Please, login');
     }
 
-    const session = await this.prisma.refreshSession.findUnique({
-      where: {
-        fingerprint_refreshToken: { refreshToken, fingerprint },
-      },
-    });
-    if (!session) {
+    const sessions = await this.findSession(refreshToken, fingerprint);
+    if (sessions.length === 0) {
       throw new UnauthorizedException('Not authorized. Please, login');
     }
-    if (session.fingerprint !== fingerprint) {
+    const isFingerprintExists = sessions.some(
+      (session) => session.fingerprint === fingerprint,
+    );
+    if (!isFingerprintExists) {
       throw new ForbiddenException('Access denied');
     }
 
@@ -54,8 +53,8 @@ export class AuthService {
     if (!refreshToken) {
       throw new UnauthorizedException('Not authorized. Please, login');
     }
-    await this.prisma.refreshSession.delete({
-      where: { fingerprint_refreshToken: { refreshToken, fingerprint } },
+    await this.prisma.refreshSession.deleteMany({
+      where: { AND: { refreshToken, fingerprint } },
     });
   }
 
@@ -70,6 +69,15 @@ export class AuthService {
       data: { userId: user.id, refreshToken, fingerprint },
     });
     return tokenData;
+  }
+
+  private async findSession(
+    refreshToken: string,
+    fingerprint: string,
+  ): Promise<IRefreshSession[]> {
+    return await this.prisma.refreshSession.findMany({
+      where: { AND: { refreshToken, fingerprint } },
+    });
   }
 
   private generateUserPayload(user: IUserEntity): Readonly<IUserPayload> {

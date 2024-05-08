@@ -27,16 +27,14 @@ model RefreshSession {
   refreshToken String
   fingerprint  String
   user         User?  @relation(fields: [userId], references: [id])
-
-  @@unique([fingerprint, refreshToken])
 }
 
 model Otp {
   id        Int      @id(map: "pkOtp") @default(autoincrement())
+  userId    Int      @unique()
   code      String
   expiresAt DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
-  userId    Int      @unique()
   user      User     @relation(fields: [userId], references: [id])
 }
