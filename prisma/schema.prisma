@@ -12,3 +12,29 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id       Int              @id(map: "pkUser") @default(autoincrement())
+  uuid     String           @unique(map: "akUserUuid") @default(uuid())
+  phone    String           @unique(map: "akUserPhone")
+  otp      Otp?
+  sessions RefreshSession[]
+}
+
+model RefreshSession {
+  id           Int    @id(map: "pkRefreshSession") @default(autoincrement())
+  userId       Int?
+  refreshToken String
+  fingerprint  String
+  user         User?  @relation(fields: [userId], references: [id])
+}
+
+model Otp {
+  id        Int      @id(map: "pkOtp") @default(autoincrement())
+  userId    Int      @unique()
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+}
